@@ -7,55 +7,77 @@ public class UserDataProcessor {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Введите данные (Фамилия Имя Отчество дата рождения(dd.mm.yyyy) номер телефона пол(м/ж)):");
-        String input = scanner.nextLine();
 
-        try {
-            String[] userData = input.split(" ");
-            if (userData.length != 6) {
-                throw new InvalidInputException("Неверное количество данных. Ожидается 6 полей.");
+        String lastName = "";
+        String firstName = "";
+        String middleName = "";
+        String gender = "";
+        String birthDate = "";
+        String phoneNumber = "";
+
+        // Запрашиваем фамилию, имя и отчество
+        while (true) {
+            System.out.println("Введите фамилию:");
+            lastName = scanner.nextLine().trim();
+            System.out.println("Введите имя:");
+            firstName = scanner.nextLine().trim();
+            System.out.println("Введите отчество:");
+            middleName = scanner.nextLine().trim();
+
+            if (lastName.isEmpty() || firstName.isEmpty() || middleName.isEmpty()) {
+                System.out.println("Фамилия, имя и отчество не могут быть пустыми. Пожалуйста, введите данные заново.");
+            } else {
+                break;
             }
+        }
 
-            String lastName = userData[0];
-            String firstName = userData[1];
-            String middleName = userData[2];
-            String birthDate = userData[3];
-            String phoneNumber = userData[4];
-            String gender = userData[5];
+        // Запрашиваем пол
+        while (true) {
+            System.out.println("Введите пол (м/ж):");
+            gender = scanner.nextLine().trim();
 
-            validateData(lastName, firstName, middleName, birthDate, phoneNumber, gender);
+            if (!gender.equals("м") && !gender.equals("ж")) {
+                System.out.println("Пол должен быть 'м' или 'ж'. Пожалуйста, введите данные заново.");
+            } else {
+                break;
+            }
+        }
 
-            String dataToWrite = String.join(" ", userData);
+        // Запрашиваем дату рождения
+        while (true) {
+            System.out.println("Введите дату рождения (dd.MM.yyyy):");
+            birthDate = scanner.nextLine().trim();
+
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+                dateFormat.setLenient(false);
+                dateFormat.parse(birthDate);
+                break;
+            } catch (ParseException e) {
+                System.out.println("Неверный формат даты рождения. Пожалуйста, введите данные заново.");
+            }
+        }
+
+        // Запрашиваем номер телефона
+        while (true) {
+            System.out.println("Введите номер телефона:");
+            phoneNumber = scanner.nextLine().trim();
+
+            try {
+                Long.parseUnsignedLong(phoneNumber);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Неверный формат номера телефона. Пожалуйста, введите данные заново.");
+            }
+        }
+
+        // Формируем строку данных для записи в файл
+        String dataToWrite = "<" + String.join("><",lastName, firstName, middleName,birthDate, phoneNumber, gender) + ">";
+        try {
             writeToFile(lastName, dataToWrite);
-
             System.out.println("Данные успешно записаны.");
-
-        } catch (InvalidInputException | ParseException e) {
-            System.out.println("Ошибка: " + e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static void validateData(String lastName, String firstName, String middleName,
-                                     String birthDate, String phoneNumber, String gender)
-            throws ParseException, InvalidInputException {
-
-        // Проверка формата даты
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-        dateFormat.setLenient(false);
-        dateFormat.parse(birthDate);
-
-        // Проверка формата номера телефона
-        try {
-            Long.parseUnsignedLong(phoneNumber);
-        } catch (NumberFormatException e) {
-            throw new InvalidInputException("Неверный формат номера телефона.");
-        }
-
-        // Проверка пола
-        if (!gender.equals("m") && !gender.equals("f")) {
-            throw new InvalidInputException("Пол должен быть 'м' или 'ж'.");
         }
     }
 
